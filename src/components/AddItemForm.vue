@@ -14,12 +14,14 @@
           v-model="descricao"
           placeholder="Descrição do item"
           class="w-full"
+          @keyup.enter="handleAddItem"
         />
         <Button
           label="Adicionar"
           icon="pi pi-plus"
           severity="success"
-          @click="addItem"
+          :loading="isSubmitting"
+          @click="handleAddItem"
         />
       </div>
     </template>
@@ -27,63 +29,80 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/firebaseConfig";
-import { supabase } from "../supabase/supabaseClient";
-import FileUpload from "primevue/fileupload";
-import InputText from "primevue/inputtext";
-import Button from "primevue/button";
-import Card from "primevue/card";
+import { ref } from 'vue';
+import { useItems } from '../composables';
+import { MESSAGES } from '../constants';
+import FileUpload from 'primevue/fileupload';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
+import Card from 'primevue/card';
 
-const descricao = ref("");
-let file = null;
+const descricao = ref('');
+const selectedFile = ref(null);
+const isSubmitting = ref(false);
 
-const emit = defineEmits(["added"]);
+const emit = defineEmits(['item-added']);
 
+// Usar composable para gerenciar itens
+const { addItemWithImage } = useItems();
+
+/**
+ * Handler para seleção de arquivo
+ */
 const onFileSelect = (event) => {
-  file = event.files[0];
+  selectedFile.value = event.files[0];
 };
 
-const addItem = async () => {
-  if (!descricao.value || !file) {
-    alert("Selecione uma imagem e preencha a descrição.");
+/**
+ * Valida os campos do formulário
+ */
+const validateForm = () => {
+  if (!descricao.value.trim()) {
+    alert('Por favor, preencha a descrição do item.');
+    return false;
+  }
+  
+  if (!selectedFile.value) {
+    alert('Por favor, selecione uma imagem.');
+    return false;
+  }
+  
+  return true;
+};
+
+/**
+ * Limpa o formulário
+ */
+const resetForm = () => {
+  descricao.value = '';
+  selectedFile.value = null;
+};
+
+/**
+ * Handler para adicionar item
+ */
+const handleAddItem = async () => {
+  if (!validateForm()) {
     return;
   }
 
+  isSubmitting.value = true;
+
   try {
-    const fileName = `${Date.now()}_${file.name}`;
+    const result = await addItemWithImage(descricao.value, selectedFile.value);
 
-    // 🔹 Upload no bucket "images"
-    const { error: uploadError } = await supabase.storage
-      .from("images")
-      .upload(fileName, file);
-
-    if (uploadError) throw uploadError;
-
-    // 🔹 Pegar URL pública correta
-    const { data: publicUrlData } = supabase.storage
-      .from("images")
-      .getPublicUrl(fileName);
-
-    const imageUrl = publicUrlData.publicUrl;
-
-    // 🔹 Salvar dados no Firestore
-    await addDoc(collection(db, "itens"), {
-      descricao: descricao.value,
-      imageUrl,
-      recuperado: false,
-      createdAt: serverTimestamp(),
-    });
-
-    descricao.value = "";
-    file = null;
-
-    emit("added"); // avisa o componente pai
-    alert("Item adicionado com sucesso!");
+    if (result.success) {
+      alert(result.message);
+      resetForm();
+      emit('item-added');
+    } else {
+      alert(result.message || MESSAGES.ERROR_ADD_ITEM);
+    }
   } catch (error) {
-    console.error("Erro ao adicionar item:", error);
-    alert("Erro ao enviar imagem para o Supabase.");
+    console.error('Erro ao adicionar item:', error);
+    alert(MESSAGES.ERROR_UPLOAD_IMAGE);
+  } finally {
+    isSubmitting.value = false;
   }
 };
 </script>

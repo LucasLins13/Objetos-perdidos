@@ -13,26 +13,26 @@
     </template>
 
     <template #subtitle>
-      <span :class="item.recuperado ? 'text-green-600' : 'text-red-500'">
-        {{ item.recuperado ? "✅ Recuperado" : "❌ Não recuperado" }}
+      <span :class="statusClass">
+        {{ statusText }}
       </span>
     </template>
 
     <template #content>
       <div class="flex justify-between mt-3">
         <Button
-          :label="item.recuperado ? 'Recuperado' : 'Marcar recuperado'"
+          :label="recoveredButtonLabel"
           :disabled="item.recuperado"
           icon="pi pi-check"
           severity="success"
-          @click="marcarRecuperado"
+          @click="handleMarkRecovered"
         />
 
         <Button
           label="Falar c/ Adriana"
           icon="pi pi-whatsapp"
           severity="info"
-          @click="abrirWhatsapp"
+          @click="handleOpenWhatsApp"
         />
       </div>
     </template>
@@ -40,25 +40,44 @@
 </template>
 
 <script setup>
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../firebase/firebaseConfig";
-import Button from "primevue/button";
-import Card from "primevue/card";
+import { computed } from 'vue';
+import { WhatsAppService } from '../services';
+import Button from 'primevue/button';
+import Card from 'primevue/card';
 
 const props = defineProps({
-  item: Object,
-  contato: String,
+  item: {
+    type: Object,
+    required: true,
+  },
+  contato: {
+    type: String,
+    required: true,
+  },
 });
 
-const emit = defineEmits(["updated"]);
+const emit = defineEmits(['mark-recovered']);
 
-const marcarRecuperado = async () => {
-  await updateDoc(doc(db, "itens", props.item.id), { recuperado: true });
-  emit("updated");
+// Computed properties para UI
+const statusClass = computed(() => 
+  props.item.recuperado ? 'text-green-600' : 'text-red-500'
+);
+
+const statusText = computed(() => 
+  props.item.recuperado ? '✅ Recuperado' : '❌ Não recuperado'
+);
+
+const recoveredButtonLabel = computed(() => 
+  props.item.recuperado ? 'Recuperado' : 'Marcar recuperado'
+);
+
+// Handlers que emitem eventos para o pai
+const handleMarkRecovered = () => {
+  emit('mark-recovered', props.item.id);
 };
 
-const abrirWhatsapp = () => {
-  const url = `https://wa.me/${props.contato}?text=Olá Adriana! Sobre o item: ${props.item.descricao}`;
-  window.open(url, "_blank");
+const handleOpenWhatsApp = () => {
+  const message = WhatsAppService.createItemMessage('Adriana', props.item.descricao);
+  WhatsAppService.openChat(props.contato, message);
 };
 </script>

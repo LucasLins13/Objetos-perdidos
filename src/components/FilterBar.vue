@@ -3,56 +3,78 @@
     class="flex flex-wrap gap-3 items-center bg-white p-3 rounded-lg shadow-md"
   >
     <InputText
-      v-model="texto"
+      :model-value="filterText"
       placeholder="Buscar item..."
       class="w-full sm:w-auto"
-      @keyup.enter="emitir"
+      @update:model-value="updateText"
+      @keyup.enter="handleFilter"
     />
 
     <Dropdown
-      v-model="status"
-      :options="opcoes"
+      :model-value="filterStatus"
+      :options="statusOptions"
       optionLabel="label"
       optionValue="value"
       class="w-full sm:w-48"
+      @update:model-value="updateStatus"
     />
 
     <Button
       icon="pi pi-filter"
       label="Filtrar"
-      @click="emitir"
       severity="primary"
       outlined
+      @click="handleFilter"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import InputText from "primevue/inputtext";
-import Dropdown from "primevue/dropdown";
-import Button from "primevue/button";
+import { watch } from 'vue';
+import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
+import Button from 'primevue/button';
 
-// 🔹 estados reativos
-const texto = ref("");
-const status = ref("todos");
+const props = defineProps({
+  filterText: {
+    type: String,
+    default: '',
+  },
+  filterStatus: {
+    type: String,
+    default: 'todos',
+  },
+  statusOptions: {
+    type: Array,
+    required: true,
+  },
+});
 
-// 🔹 opções de status
-const opcoes = [
-  { label: "Todos", value: "todos" },
-  { label: "Não recuperados", value: "ativos" },
-  { label: "Recuperados", value: "recuperados" },
-];
+const emit = defineEmits(['filtrar']);
 
-const emit = defineEmits(["filtrar"]);
-
-// 🔹 dispara o evento manualmente
-const emitir = () => {
-  emit("filtrar", { texto: texto.value, status: status.value });
+/**
+ * Atualiza o texto do filtro
+ */
+const updateText = (value) => {
+  emit('filtrar', { texto: value, status: props.filterStatus });
 };
 
-// 🔹 dispara automaticamente quando o filtro muda (mais intuitivo)
-watch([texto, status], () => {
-  emit("filtrar", { texto: texto.value, status: status.value });
+/**
+ * Atualiza o status do filtro
+ */
+const updateStatus = (value) => {
+  emit('filtrar', { texto: props.filterText, status: value });
+};
+
+/**
+ * Handler para botão de filtrar
+ */
+const handleFilter = () => {
+  emit('filtrar', { texto: props.filterText, status: props.filterStatus });
+};
+
+// Auto-filtrar quando os valores mudam
+watch([() => props.filterText, () => props.filterStatus], () => {
+  emit('filtrar', { texto: props.filterText, status: props.filterStatus });
 });
 </script>
