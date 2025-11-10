@@ -8,6 +8,7 @@ export class Item {
     this.id = data.id || null;
     this.descricao = data.descricao || '';
     this.imageUrl = data.imageUrl || '';
+    this.tags = data.tags || [];
     this.recuperado = data.recuperado || false;
     this.createdAt = data.createdAt || null;
   }
@@ -26,6 +27,7 @@ export class Item {
     return {
       descricao: this.descricao,
       imageUrl: this.imageUrl,
+      tags: this.tags,
       recuperado: this.recuperado,
       createdAt: this.createdAt,
     };
@@ -39,5 +41,24 @@ export class Item {
       id: doc.id,
       ...doc.data(),
     });
+  }
+
+  /**
+   * Verifica se o item contém um termo de busca (em descrição ou tags)
+   */
+  matchesSearch(searchTerm) {
+    if (!searchTerm) return true;
+    
+    const term = searchTerm.toLowerCase();
+    
+    // Buscar na descrição
+    const matchesDescription = this.descricao.toLowerCase().includes(term);
+    
+    // Buscar nas tags
+    const matchesTags = this.tags.some(tag => 
+      tag.toLowerCase().includes(term)
+    );
+    
+    return matchesDescription || matchesTags;
   }
 }

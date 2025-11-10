@@ -26,10 +26,10 @@ export function useItemFilter(items) {
     if (!items.value) return [];
 
     return items.value.filter((item) => {
-      // Filtro por texto
-      const matchesText = item.descricao
-        .toLowerCase()
-        .includes(filterText.value.toLowerCase());
+      // Filtro por texto (busca em descrição e tags)
+      const matchesText = item.matchesSearch 
+        ? item.matchesSearch(filterText.value)
+        : item.descricao.toLowerCase().includes(filterText.value.toLowerCase());
 
       // Filtro por status
       const matchesStatus =

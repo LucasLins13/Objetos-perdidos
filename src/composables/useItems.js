@@ -4,7 +4,7 @@
  */
 
 import { ref, onMounted, onUnmounted } from 'vue';
-import { ItemService, StorageService } from '../services';
+import { ItemService, StorageService, VisionService, AuthService } from '../services';
 import { MESSAGES } from '../constants';
 
 export function useItems() {
@@ -67,17 +67,35 @@ export function useItems() {
    * @param {File} file - Arquivo de imagem
    */
   const addItemWithImage = async (descricao, file) => {
+    // Verificar se é admin
+    if (!AuthService.isCurrentUserAdmin()) {
+      return { success: false, message: MESSAGES.ADMIN_ONLY };
+    }
+
     try {
       loading.value = true;
       error.value = null;
 
-      // Upload da imagem
+      // 1. Analisar imagem com Google Vision API (antes do upload)
+      console.log('Analisando imagem com Google Vision API...');
+      const tags = await VisionService.analyzeImageFile(file);
+      console.log('Tags extraídas:', tags);
+
+      // 2. Upload da imagem para Supabase
       const imageUrl = await StorageService.uploadImage(file);
 
-      // Adiciona o item no Firestore
-      await ItemService.addItem({ descricao, imageUrl });
+      // 3. Adiciona o item no Firestore com as tags
+      await ItemService.addItem({ 
+        descricao, 
+        imageUrl,
+        tags, // Incluir tags extraídas
+      });
 
-      return { success: true, message: MESSAGES.ITEM_ADDED_SUCCESS };
+      return { 
+        success: true, 
+        message: MESSAGES.ITEM_ADDED_SUCCESS,
+        tags, // Retornar tags para feedback opcional
+      };
     } catch (err) {
       error.value = err.message;
       console.error('Erro ao adicionar item com imagem:', err);
@@ -92,6 +110,11 @@ export function useItems() {
    * @param {string} itemId - ID do item
    */
   const markAsRecovered = async (itemId) => {
+    // Verificar se é admin
+    if (!AuthService.isCurrentUserAdmin()) {
+      return { success: false, message: MESSAGES.ADMIN_ONLY };
+    }
+
     try {
       loading.value = true;
       error.value = null;
@@ -111,6 +134,11 @@ export function useItems() {
    * @param {string} itemId - ID do item
    */
   const deleteItem = async (itemId) => {
+    // Verificar se é admin
+    if (!AuthService.isCurrentUserAdmin()) {
+      return { success: false, message: MESSAGES.ADMIN_ONLY };
+    }
+
     try {
       loading.value = true;
       error.value = null;
