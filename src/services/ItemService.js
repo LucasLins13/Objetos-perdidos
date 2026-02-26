@@ -27,8 +27,9 @@ export class ItemService {
   static async addItem(itemData) {
     const item = new Item({
       ...itemData,
-      createdAt: serverTimestamp(),
       recuperado: false,
+      createdAt: serverTimestamp(),
+      recuperadoAt: null
     });
 
     if (!item.isValid()) {
@@ -58,7 +59,7 @@ export class ItemService {
    * @param {string} itemId - ID do item
    */
   static async markAsRecovered(itemId) {
-    await this.updateItem(itemId, { recuperado: true });
+    await this.updateItem(itemId, { recuperado: true, recuperadoAt: serverTimestamp() });
   }
 
   /**
