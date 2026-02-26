@@ -47,6 +47,7 @@
               :item="item"
               :contato="contatoAdriana"
               @mark-recovered="handleMarkRecovered"
+              @delete="handleItemDelete"
             />
           </TransitionGroup>
         </div>
@@ -90,7 +91,7 @@ import FilterBar from '../components/FilterBar.vue';
 const contatoAdriana = CONTATO_ADRIANA;
 
 // Usar composables para gerenciar estado
-const { items, loading, markAsRecovered } = useItems();
+const { items, loading, markAsRecovered, deleteItem } = useItems();
 const { filterText, filterStatus, statusOptions, filteredItems, applyFilter } = useItemFilter(items);
 
 // Estatísticas
@@ -106,6 +107,10 @@ const pendingCount = computed(() =>
 const handleMarkRecovered = async (itemId) => {
   await markAsRecovered(itemId);
 };
+
+const handleItemDelete = async (itemId) => {
+  await deleteItem(itemId);
+}
 </script>
 
 <style scoped>
