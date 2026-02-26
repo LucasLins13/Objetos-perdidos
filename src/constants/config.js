@@ -4,8 +4,6 @@
 
 export const CONTATO_ADRIANA = '5599999999999';
 
-export const GOOGLE_VISION_API_KEY = 'AIzaSyD1w5sTPGSSfcTA7l7sG4YTPU8pyKpaZtI';
-
 /**
  * Configuração de Autenticação e Permissões
  */
