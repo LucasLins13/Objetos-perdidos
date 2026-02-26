@@ -40,7 +40,7 @@
           severity="success"
           size="small"
           outlined
-          class="action-btn"
+          class="action-btn mark-recovered-btn"
           @click="handleMarkRecovered"
         />
 
@@ -51,6 +51,16 @@
           size="small"
           class="action-btn whatsapp-btn"
           @click="handleOpenWhatsApp"
+        />
+
+        <Button
+          v-if="isAdmin"
+          label="Deletar"
+          icon="pi pi-x"
+          severity="danger"
+          size="small"
+          class="action-btn delete-btn"
+          @click="handleItemDelete"
         />
       </div>
     </div>
@@ -75,7 +85,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['mark-recovered']);
+const emit = defineEmits(['mark-recovered', 'delete']);
 
 // Verificar se usuário é admin
 const { isAdmin } = useAuth();
@@ -106,6 +116,10 @@ const handleOpenWhatsApp = () => {
   const message = WhatsAppService.createItemMessage('Adriana', props.item.descricao);
   WhatsAppService.openChat(props.contato, message);
 };
+
+const handleItemDelete = () => {
+  emit('delete', props.item.id)
+}
 </script>
 
 <style scoped>
@@ -222,16 +236,30 @@ const handleOpenWhatsApp = () => {
   display: flex;
   gap: 0.5rem;
   margin-top: auto;
+  transition: all 300ms ease-in;
 }
 
 .action-btn {
   flex: 1;
   justify-content: center;
+  transition: all 300ms ease-in;
+}
+
+.mark-recovered-btn:hover {
+  background-color: #10B981 !important;
+  border-color: #10B981 !important;
+  color: white !important;
 }
 
 .whatsapp-btn:hover {
   background-color: #25D366 !important;
   border-color: #25D366 !important;
+  color: white !important;
+}
+
+.delete-btn:hover {
+  background-color: #EF4444 !important;
+  border-color: #EF4444 !important;
   color: white !important;
 }
 
