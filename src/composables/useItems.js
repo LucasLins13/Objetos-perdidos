@@ -76,10 +76,11 @@ export function useItems() {
       loading.value = true;
       error.value = null;
 
-      // 1. Analisar imagem com Google Vision API (antes do upload)
-      console.log('Analisando imagem com Google Vision API...');
-      const tags = await VisionService.analyzeImageFile(file);
-      console.log('Tags extraídas:', tags);
+      // Problemas de CORS
+      // 1. Analisar imagem com Imagga API (antes do upload)
+      //console.log('Analisando imagem com Imagga API...');
+      // const tags = await VisionService.analyzeImageFile(file);
+      //console.log('Tags extraídas:', tags);
 
       // 2. Upload da imagem para Supabase
       const imageUrl = await StorageService.uploadImage(file);
@@ -88,13 +89,13 @@ export function useItems() {
       await ItemService.addItem({ 
         descricao, 
         imageUrl,
-        tags, // Incluir tags extraídas
+        //tags, // Incluir tags extraídas
       });
 
       return { 
         success: true, 
         message: MESSAGES.ITEM_ADDED_SUCCESS,
-        tags, // Retornar tags para feedback opcional
+        // tags, // Retornar tags para feedback opcional
       };
     } catch (err) {
       error.value = err.message;

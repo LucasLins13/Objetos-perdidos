@@ -11,7 +11,7 @@
       />
     </div>
 
-    <Dropdown
+    <Select
       :model-value="filterStatus"
       :options="statusOptions"
       optionLabel="label"
@@ -21,25 +21,25 @@
       @update:model-value="updateStatus"
     >
       <template #value="slotProps">
-        <div v-if="slotProps.value" class="flex items-center gap-2">
+        <div v-if="slotProps.value" class="flex items-center gap-2 pad2">
           <i :class="getStatusIcon(slotProps.value)"></i>
           <span>{{ slotProps.placeholder || getStatusLabel(slotProps.value) }}</span>
         </div>
       </template>
       <template #option="slotProps">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 pad">
           <i :class="getStatusIcon(slotProps.option.value)"></i>
           <span>{{ slotProps.option.label }}</span>
         </div>
       </template>
-    </Dropdown>
+    </Select>
   </div>
 </template>
 
 <script setup>
 import { watch } from 'vue';
 import InputText from 'primevue/inputtext';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import Button from 'primevue/button';
 
 const props = defineProps({
@@ -107,6 +107,11 @@ watch([() => props.filterText, () => props.filterStatus], () => {
 </script>
 
 <style scoped>
+
+.pad {
+  padding: 10px;
+}
+
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -142,6 +147,12 @@ watch([() => props.filterText, () => props.filterStatus], () => {
   min-width: 200px;
 }
 
+:deep(.p-select-label) {
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+}
+
 @media (max-width: 640px) {
   .filter-bar {
     padding: 1rem;
@@ -150,6 +161,10 @@ watch([() => props.filterText, () => props.filterStatus], () => {
   .filter-input-group,
   .filter-dropdown {
     width: 100%;
+  }
+
+  .pad2 {
+    padding: 10px;
   }
 }
 </style>

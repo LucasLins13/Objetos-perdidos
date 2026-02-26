@@ -8,7 +8,7 @@ import { FILTER_STATUS } from '../constants';
 
 export function useItemFilter(items) {
   const filterText = ref('');
-  const filterStatus = ref(FILTER_STATUS.TODOS);
+  const filterStatus = ref(FILTER_STATUS.ATIVOS);
 
   /**
    * Opções de status para dropdown
